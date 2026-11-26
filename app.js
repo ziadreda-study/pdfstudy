@@ -23,6 +23,7 @@ function setTool(t){tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b
 mark();
 // open
 let virtual=false,textCache={},bms=new Set();
+function unsup(ext){const m='📄 الملف ده ('+(ext?'.'+ext:'من غير امتداد')+') مش بيتفتح هنا. افتحه ببرنامجه واحفظه PDF أو PowerPoint (pptx) أو Word (docx) أو صورة، وبعدين اختاره تاني.';st(m,true);toast('النوع ده مش مدعوم، احفظه PDF أو pptx أو docx')}
 function openFile(f){if(!f)return;fileName=f.name;toast('بيفتح الملف...');st('1/4 قراءة الملف: '+f.name+' ('+Math.round(f.size/1024)+' KB)');
  const ext=(f.name.split('.').pop()||'').toLowerCase();
  const run=async buf=>{try{
@@ -31,8 +32,11 @@ function openFile(f){if(!f)return;fileName=f.name;toast('بيفتح الملف..
   else if(ext=='docx')await loadVirtual(await docxPages(buf));
   else if(/^(txt|md|csv|json|log|text)$/.test(ext))await loadVirtual(textPages(new TextDecoder().decode(buf)));
   else if(f.type.startsWith('image/')||/^(png|jpe?g|webp|gif|bmp)$/.test(ext))await loadVirtual([await imagePage(f)]);
-  else if(/^(ppt|doc|xls|xlsx|odp|odt)$/.test(ext)){st('الصيغة دي مش مدعومة. احفظها pptx أو docx أو PDF',true);toast('الصيغة دي مش مدعومة')}
-  else await loadBytes(buf);
+  else if(/^(ppt|doc|xls|xlsx|odp|odt|rtf)$/.test(ext)){unsup(ext)}
+  else{const u=new Uint8Array(buf.slice?buf.slice(0,4):buf),m=String.fromCharCode(...u);
+   if(m=='%PDF')await loadBytes(buf);
+   else if(m.slice(0,2)=='PK'){try{await loadVirtual(await pptxPages(buf))}catch(e1){try{await loadVirtual(await docxPages(buf))}catch(e2){unsup(ext)}}}
+   else unsup(ext)}
  }catch(err){st('فشل: '+(err&&err.message||err),true);toast('حصل خطأ: '+(err&&err.message||err))}};
  const viaReader=()=>{const r=new FileReader();r.onerror=()=>{st('مقدرتش أقرأ الملف: '+(r.error&&r.error.name),true)};r.onload=()=>run(r.result);r.readAsArrayBuffer(f)};
  try{f.arrayBuffer().then(run,e=>{st('arrayBuffer فشل ('+(e&&e.name)+')، بجرب طريقة تانية...',true);viaReader()})}catch(e){viaReader()}}
