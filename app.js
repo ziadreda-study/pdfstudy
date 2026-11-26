@@ -32,10 +32,13 @@ function openFile(f){if(!f)return;fileName=f.name;toast('بيفتح الملف..
   else if(ext=='docx')await loadVirtual(await docxPages(buf));
   else if(/^(txt|md|csv|json|log|text)$/.test(ext))await loadVirtual(textPages(new TextDecoder().decode(buf)));
   else if(f.type.startsWith('image/')||/^(png|jpe?g|webp|gif|bmp)$/.test(ext))await loadVirtual([await imagePage(f)]);
-  else if(/^(ppt|doc|xls|xlsx|odp|odt|rtf)$/.test(ext)){unsup(ext)}
+  else if(ext=='ppt')await loadVirtual(pptLegacyPages(buf));
+  else if(ext=='doc')await loadVirtual(textPages(docLegacyText(buf)));
+  else if(/^(xls|xlsx|odp|odt|rtf)$/.test(ext)){unsup(ext)}
   else{const u=new Uint8Array(buf.slice?buf.slice(0,4):buf),m=String.fromCharCode(...u);
    if(m=='%PDF')await loadBytes(buf);
    else if(m.slice(0,2)=='PK'){try{await loadVirtual(await pptxPages(buf))}catch(e1){try{await loadVirtual(await docxPages(buf))}catch(e2){unsup(ext)}}}
+   else if(u[0]==0xD0&&u[1]==0xCF){try{await loadVirtual(pptLegacyPages(buf))}catch(a){try{await loadVirtual(textPages(docLegacyText(buf)))}catch(b){unsup(ext)}}}
    else unsup(ext)}
  }catch(err){st('فشل: '+(err&&err.message||err),true);toast('حصل خطأ: '+(err&&err.message||err))}};
  const viaReader=()=>{const r=new FileReader();r.onerror=()=>{st('مقدرتش أقرأ الملف: '+(r.error&&r.error.name),true)};r.onload=()=>run(r.result);r.readAsArrayBuffer(f)};
@@ -250,6 +253,55 @@ function textPages(txt){const W=595,H=842,M=40,mw=W-2*M,fs=15,lh=22,per=Math.flo
  const lines=[];txt.split('\n').forEach(p=>{if(!p.trim())lines.push('');else wrap(p,mw,fs+'px '+FF).forEach(l=>lines.push(l))});
  lines.forEach(l=>{cur.push(l);if(cur.length>=per){pgs.push(cur);cur=[]}});if(cur.length||!pgs.length)pgs.push(cur);
  return pgs.map(L=>({text:L.join('\n'),getViewport:({scale})=>({width:W*scale,height:H*scale}),render({canvasContext:ctx,viewport}){REC=this.boxes=[];const kk=viewport.width/W;ctx.setTransform(kk,0,0,kk,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);drawLines(ctx,L,M,M,fs,lh,mw,'#111');return{promise:Promise.resolve()}}}))}
+function oleRead(buf){const u=new Uint8Array(buf),dv=new DataView(buf);
+ if(u.length<512||dv.getUint32(0,true)!=0xE011CFD0||dv.getUint32(4,true)!=0xE11AB1A1)throw Error('مش ملف أوفيس قديم سليم');
+ const ss=1<<dv.getUint16(30,true),ms=1<<dv.getUint16(32,true),cut=dv.getUint32(56,true);
+ const sec=i=>{const o=(i+1)*ss;return u.subarray(o,o+ss)};
+ const fatIds=[];for(let i=0;i<109;i++){const v=dv.getInt32(76+i*4,true);if(v>=0)fatIds.push(v)}
+ let dif=dv.getInt32(68,true),nd=dv.getUint32(72,true);while(dif>=0&&nd-->0){const o=(dif+1)*ss;for(let i=0;i<ss/4-1;i++){const v=dv.getInt32(o+i*4,true);if(v>=0)fatIds.push(v)}dif=dv.getInt32(o+ss-4,true)}
+ const fat=[];for(const id of fatIds){const o=(id+1)*ss;for(let i=0;i<ss/4;i++)fat.push(dv.getInt32(o+i*4,true))}
+ const chain=(s,tbl)=>{const r=[];let n=0;while(s>=0&&s<tbl.length&&n++<1e6){r.push(s);s=tbl[s]}return r};
+ const read=(s,size)=>{const c=chain(s,fat),out=new Uint8Array(c.length*ss);c.forEach((x,i)=>out.set(sec(x),i*ss));return size==null?out:out.subarray(0,size)};
+ const dir=read(dv.getInt32(48,true));const ddv=new DataView(dir.buffer,dir.byteOffset,dir.byteLength);
+ const ents=[];for(let o=0;o+128<=dir.length;o+=128){const nl=ddv.getUint16(o+64,true);if(!nl)continue;let nm='';for(let i=0;i<nl/2-1;i++)nm+=String.fromCharCode(ddv.getUint16(o+i*2,true));ents.push({name:nm,type:dir[o+66],start:ddv.getInt32(o+116,true),size:ddv.getUint32(o+120,true)})}
+ const root=ents.find(e=>e.type==5);let mini=null,mfat=null;
+ const getMini=()=>{if(mini)return;mini=read(root.start,root.size);const mf=read(dv.getInt32(60,true));const m=new DataView(mf.buffer,mf.byteOffset,mf.byteLength);mfat=[];for(let i=0;i<mf.length/4;i++)mfat.push(m.getInt32(i*4,true))};
+ return{get(name){const e=ents.find(x=>x.name==name&&x.type==2);if(!e)return null;
+  if(e.size<cut){getMini();const c=chain(e.start,mfat),out=new Uint8Array(c.length*ms);c.forEach((x,i)=>out.set(mini.subarray(x*ms,x*ms+ms),i*ms));return out.subarray(0,e.size)}
+  return read(e.start,e.size)}}}
+function pptLegacyPages(buf){const ole=oleRead(buf);const d=ole.get('PowerPoint Document');if(!d)throw Error('مش لاقي شرايح في الملف');
+ const dv=new DataView(d.buffer,d.byteOffset,d.byteLength);const pages=[];let cur=null;
+ const u16=b=>new TextDecoder('utf-16le').decode(b),l1=b=>new TextDecoder('windows-1252').decode(b);
+ const walk=(s,e,inList)=>{let o=s;while(o+8<=e){const vi=dv.getUint16(o,true),t=dv.getUint16(o+2,true),len=dv.getUint32(o+4,true),ver=vi&15,ins=vi>>4;const be=Math.min(o+8+len,e);
+  if(ver==15){walk(o+8,be,t==0x0FF0?ins==0:inList)}
+  else if(inList){if(t==0x03F3){cur=[];pages.push(cur)}
+   else if(cur&&(t==0x0FA0||t==0x0FA8)){const txt=(t==0x0FA0?u16(d.subarray(o+8,be)):l1(d.subarray(o+8,be)));txt.split(/[\r\n\v\u000b]+/).forEach(p=>{if(p.trim())cur.push(p.trim())})}}
+  o=be}};
+ walk(0,d.length,false);
+ if(!pages.some(p=>p.length)){pages.length=0;let on=false;
+  const w2=(s,e)=>{let o=s;while(o+8<=e){const vi=dv.getUint16(o,true),t=dv.getUint16(o+2,true),len=dv.getUint32(o+4,true),ver=vi&15;const be=Math.min(o+8+len,e);
+   if(ver==15){if(t==0x03EE){cur=[];pages.push(cur);on=true;w2(o+8,be);on=false}else if(t==0x03F0||t==0x03F8){}else w2(o+8,be)}
+   else if(on&&cur&&(t==0x0FA0||t==0x0FA8)){const txt=(t==0x0FA0?u16(d.subarray(o+8,be)):l1(d.subarray(o+8,be)));txt.split(/[\r\n\v]+/).forEach(p=>{if(p.trim())cur.push(p.trim())})}
+   o=be}};
+  w2(0,d.length)}
+ if(!pages.length)throw Error('مقدرتش أطلّع نص من الملف ده');
+ toast('PowerPoint قديم (ppt): بيتعرض النص بس، الصور والأشكال مش بتظهر');
+ return pages.map(p=>slidePage(p.length?p:['(شريحة بدون نص)'],[]))}
+function docLegacyText(buf){const ole=oleRead(buf);const w=ole.get('WordDocument');if(!w)throw Error('مش لاقي نص في الملف');
+ const dv=new DataView(w.buffer,w.byteOffset,w.byteLength);if(dv.getUint16(0,true)!=0xA5EC)throw Error('ملف Word قديم جدًا أو مش سليم');
+ const flags=dv.getUint16(10,true);if(flags&0x100)throw Error('الملف مشفّر');
+ const tb=ole.get((flags&0x200)?'1Table':'0Table');if(!tb)throw Error('مقدرتش أقرأ الملف');
+ const ccp=dv.getInt32(76,true),fcClx=dv.getUint32(418,true),lcb=dv.getUint32(422,true);
+ const t=new DataView(tb.buffer,tb.byteOffset,tb.byteLength);let o=fcClx;const end=fcClx+lcb;
+ while(o<end&&tb[o]==1){o+=3+t.getUint16(o+1,true)}
+ if(tb[o]!=2)throw Error('مقدرتش أطلّع نص من الملف ده');
+ const plen=t.getUint32(o+1,true);o+=5;const n=((plen-4)/12)|0;let out='';
+ for(let i=0;i<n;i++){const cs=t.getUint32(o+i*4,true),ce=t.getUint32(o+(i+1)*4,true);const pcd=o+(n+1)*4+i*8;let fc=t.getUint32(pcd+2,true);const cnt=Math.min(ce,ccp)-cs;if(cnt<=0)continue;
+  if(fc&0x40000000){fc=(fc&0x3FFFFFFF)/2;out+=new TextDecoder('windows-1252').decode(w.subarray(fc,fc+cnt))}
+  else out+=new TextDecoder('utf-16le').decode(w.subarray(fc,fc+cnt*2))}
+ out=out.replace(/\r\n?/g,'\n').replace(/[\u0001\u0008\u0013\u0014\u0015]/g,'').replace(/\u0007/g,' ').replace(/\f/g,'\n');
+ if(!out.trim())throw Error('مفيش نص في الملف');
+ toast('Word قديم (doc): بيتعرض النص بس');return out}
 async function docxPages(buf){const z=await unzip(buf);const b=await z.get('word/document.xml');if(!b)throw Error('ملف docx غير سليم');return textPages(xmlParas(b,'w:p','w:t').join('\n'))}
 async function imagePage(f){const bm=await createImageBitmap(f);const s=Math.min(1,1400/Math.max(bm.width,bm.height)),W=Math.round(bm.width*s),H=Math.round(bm.height*s);
  return{text:'',getViewport:({scale})=>({width:W*scale,height:H*scale}),render({canvasContext:ctx,viewport}){REC=this.boxes=[];const kk=viewport.width/W;ctx.setTransform(kk,0,0,kk,0,0);ctx.drawImage(bm,0,0,W,H);return{promise:Promise.resolve()}}}}
