@@ -1,0 +1,65 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#14151a"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>مذاكرة PDF</title><link rel="stylesheet" href="app.css"><style>html,body{overflow:hidden;margin:0}</style></head><body><div id="root"><div id="wrap">
+<div id="nav">
+ <button id="prev" class="nb big" title="السابق">‹</button>
+ <span class="pg" dir="ltr"><input id="pn" type="number" min="1" value="1"><span id="pt">/0</span></span>
+ <button id="next" class="nb big" title="التالي">›</button>
+ <button id="drawerBtn" class="nb" title="الأدوات">🛠️</button>
+ <span id="info"></span>
+</div>
+<div id="body">
+ <div id="main"><div id="drop"><h1>📘 مذاكرة PDF</h1><p>اضغط الزرار واختار ملف: PDF أو PowerPoint (pptx) أو Word (docx) أو نص أو صورة.<br>هايلايت، رسم، كتابة، ممحاة، ترجمة للعربي، وبعدين احفظ نسخة عليها شخبطتك.<br>الملف مابيتبعتش لأي مكان، كله على جهازك.</p><label class="go pick">اختار ملف<input id="file2" type="file" accept=".pdf,.pptx,.docx,.txt,.png,.jpg,.jpeg,.webp,.gif,.bmp,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/octet-stream"></label></div></div>
+ <div id="dock">
+  <button id="handle" aria-label="الأدوات"><span></span></button>
+  <div id="drawer">
+   <div class="sec">ملف وتنقل</div>
+   <div class="grid">
+    <label class="tb pick"><i>📂</i><b>افتح ملف</b><input id="file" type="file" accept=".pdf,.pptx,.docx,.txt,.png,.jpg,.jpeg,.webp,.gif,.bmp,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/octet-stream"></label>
+    <button id="thumbs" class="tb"><i>▦</i><b>الصفحات</b></button>
+   </div>
+   <div class="sec">أدوات</div>
+   <div class="grid">
+    <button data-tool="hand" class="tb on"><i>✋</i><b>قراءة</b></button>
+    <button data-tool="pen" class="tb"><i>✏️</i><b>قلم</b></button>
+    <button data-tool="hl" class="tb"><i>🖍️</i><b>هايلايت</b></button>
+    <button data-tool="rect" class="tb"><i>▭</i><b>مربع</b></button>
+    <button data-tool="text" class="tb"><i>🅣</i><b>نص</b></button>
+    <button data-tool="eraser" class="tb"><i>🧽</i><b>ممحاة</b></button>
+    <button id="trans" class="tb"><i>🌐</i><b>ترجم</b></button>
+   </div>
+   <div class="sec">لون وسُمك</div>
+   <div id="sw"></div>
+   <input id="color" type="color" value="#e03131" title="لون">
+   <input id="size" type="range" min="1" max="30" value="3" title="السُمك">
+   <div class="grid">
+    <button id="undo" class="tb"><i>↶</i><b>تراجع</b></button>
+    <button id="redo" class="tb"><i>↷</i><b>إعادة</b></button>
+   </div>
+   <div class="sec">عرض</div>
+   <div class="grid">
+    <button id="zin" class="tb"><i>＋</i><b>تكبير</b></button>
+    <button id="zout" class="tb"><i>－</i><b>تصغير</b></button>
+    <button id="fit" class="tb"><i>⤢</i><b>عرض الصفحة</b></button>
+    <button id="night" class="tb"><i>🌙</i><b>ليلي</b></button>
+   </div>
+   <span id="zv" class="zv">100%</span>
+   <div class="sec">مذاكرة</div>
+   <div class="grid">
+    <button id="note" class="tb"><i>📝</i><b>نوتة</b></button>
+    <button id="ask" class="tb"><i>💬</i><b>اسألني</b></button>
+    <button id="readpg" class="tb"><i>📷</i><b>اقرأ الصفحة</b></button>
+    <button id="cards" class="tb"><i>🃏</i><b>كروت</b></button>
+    <button id="fsbtn" class="tb"><i>⛶</i><b>ملء الشاشة</b></button>
+    <button id="askchat" class="tb"><i>🤖</i><b>اسأل شات</b></button>
+    <button id="srch" class="tb"><i>🔎</i><b>بحث</b></button>
+    <button id="bm" class="tb"><i>⭐</i><b>علّم</b></button>
+    <button id="bml" class="tb"><i>📚</i><b>المعلّمة</b></button>
+    <button id="tmr" class="tb"><i>⏱</i><b>تايمر</b></button>
+   </div>
+   <div class="sec">حفظ</div>
+   <div class="grid one"><button id="save" class="tb acc"><i>💾</i><b>احفظ PDF</b></button></div>
+  </div>
+ </div>
+</div>
+<div id="toast"></div>
+</div>
+</div><script src="tesseract.min.js"></script><script type="module" src="main.js"></script></body></html>
