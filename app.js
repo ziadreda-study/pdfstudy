@@ -601,23 +601,37 @@ function explainSel(t){
  const msg='اشرحلي الجزء ده من الملف بالعربي المصري البسيط، شرح دقيق ومطابق للنص، وسيب المصطلحات العلمية والطبية بالإنجليزي زي ما هي:\n\n'+t;
  const share=()=>{copyText(msg);try{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank')}catch(e){}toast('اتنسخ، والصقه في شات المساعد وابعته')};
  const p=selPg||curPage();
- sheet(async(s,mk)=>{
+ sheet((s,mk)=>{
   const h=document.createElement('h3');h.textContent=__T('📖 شرح');s.appendChild(h);
   const q=document.createElement('div');q.style.cssText='font-size:13px;line-height:1.8;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px;max-height:80px;overflow:auto;direction:auto;text-align:start';q.textContent=t;s.appendChild(q);
-  privNote(s,'⚠️ تنبيه خصوصية: النص المحدد وجزء من نص الصفحة بيتبعتوا لخدمة ذكاء اصطناعي خارجية عشان تعمل الشرح. باقي الملف مابيتبعتش.','النص المحدد بيتبعت لخدمة شرح خارجية.');
+  const dest=document.createElement('div');dest.style.cssText='font-size:12px;color:var(--mute);line-height:1.6;margin:2px 0 6px';dest.textContent=__T('اللي هيتبعت: النص المحدد بس، لخدمة ذكاء اصطناعي مجانية اسمها Pollinations AI. مفيش حاجة بتتبعت غير لما تدوس "اشرح دلوقتي".');s.appendChild(dest);
   const out=document.createElement('div');out.style.cssText='font-size:15px;line-height:1.95;white-space:pre-wrap;text-align:start';s.appendChild(out);
-  const st=document.createElement('div');st.style.cssText='font-size:13px;color:var(--mute)';st.textContent=__T('بجهز الشرح...');s.appendChild(st);
+  const st=document.createElement('div');st.style.cssText='font-size:13px;color:var(--mute)';s.appendChild(st);
+  let ctx='',prev=null;
+  const cbtn=mk(__T('➕ ضيف نص الصفحة حواليه (اختياري)'),'g',async()=>{
+   if(ctx){ctx='';if(prev){prev.remove();prev=null}cbtn.textContent=__T('➕ ضيف نص الصفحة حواليه (اختياري)');return}
+   cbtn.textContent=__T('بحمّل النص...');
+   ctx=await pageContext(p);
+   if(!ctx){cbtn.textContent=__T('مفيش نص حواليه');return}
+   cbtn.textContent=__T('✕ شيل نص الصفحة');
+   prev=document.createElement('div');prev.style.cssText='font-size:12px;line-height:1.7;color:var(--mute);background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:8px;max-height:90px;overflow:auto;text-align:start';
+   prev.textContent=ctx.slice(0,500)+(ctx.length>500?'…':'');
+   s.insertBefore(prev,out);
+   const nt=document.createElement('div');nt.style.cssText='font-size:11px;color:var(--mute);margin-top:4px';nt.textContent=__T('ده اللي هيتبعت زيادة، من غير أي تعديل');prev.appendChild(nt);
+  });
+  const go=mk(__T('اشرح دلوقتي'),'',async()=>{
+   go.disabled=true;go.style.opacity='.6';out.textContent='';st.style.color='var(--mute)';st.textContent=__T('بجهز الشرح...');
+   try{
+    const ex=await aiExplain(t,ctx);
+    out.textContent=ex;st.remove();go.remove();
+    mk(__T('انسخ الشرح'),'g',()=>copyText(ex));
+    mk(__T('شرح تاني'),'g',()=>explainSel(t));
+   }catch(e){
+    go.disabled=false;go.style.opacity='1';
+    st.style.color='#ff8a8a';st.textContent=__T('الشرح مش راضي يجي')+': '+((e&&e.message)||e);
+   }
+  });
   mk(__T('ابعت للمساعد (واتساب)'),'g',share);
-  try{
-   const ex=await aiExplain(t,await pageContext(p));
-   out.textContent=ex;st.remove();
-   mk(__T('انسخ الشرح'),'g',()=>copyText(ex));
-   mk(__T('شرح تاني'),'g',()=>explainSel(t));
-  }catch(e){
-   st.style.color='#ff8a8a';st.textContent=__T('الشرح مش راضي يجي')+': '+((e&&e.message)||e);
-   const hint=document.createElement('div');hint.style.cssText='font-size:12px;color:var(--mute);line-height:1.7';hint.textContent=__T('اتأكد إن النت شغال وجرب تاني، أو ابعت النص للمساعد من الزرار اللي تحت.');s.appendChild(hint);
-   mk(__T('جرب تاني'),'',()=>explainSel(t));
-  }
  });
 }
 pop.onclick=e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;const t=selTxt,p=selPg;pop.style.display='none';try{getSelection().removeAllRanges()}catch(x){}
