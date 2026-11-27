@@ -59,6 +59,7 @@ if(document.readyState=='loading')document.addEventListener('DOMContentLoaded',(
 else{buildGlobe();apply();mo.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:ATTRS})}
 /* English */
 Object.assign(EN,{
+'معلومات وخصوصية':'Info & privacy',
 'السابق':'Previous','التالي':'Next','الأدوات':'Tools',
 'اضغط الزرار واختار ملف: PDF أو PowerPoint (pptx) أو Word (docx) أو نص أو صورة.':'Tap the button and pick a file: PDF, PowerPoint (pptx), Word (docx), text or image.',
 'هايلايت، رسم، كتابة، ممحاة، ترجمة للعربي، وبعدين احفظ نسخة عليها شخبطتك.':'Highlight, draw, write, erase, translate, then save a copy with your scribbles.',
@@ -184,6 +185,7 @@ PATS.push(
 );
 /* Français */
 Object.assign(FR,{
+'معلومات وخصوصية':'Infos & confidentialité',
 'السابق':'Précédent','التالي':'Suivant','الأدوات':'Outils',
 'اضغط الزرار واختار ملف: PDF أو PowerPoint (pptx) أو Word (docx) أو نص أو صورة.':'Appuyez sur le bouton et choisissez un fichier : PDF, PowerPoint (pptx), Word (docx), texte ou image.',
 'هايلايت، رسم، كتابة، ممحاة، ترجمة للعربي، وبعدين احفظ نسخة عليها شخبطتك.':'Surlignez, dessinez, écrivez, effacez, traduisez, puis enregistrez une copie annotée.',
@@ -257,6 +259,7 @@ Object.assign(FR,{
 'جاهز ✓ اختار ملف.':'Prêt ✓ choisissez un fichier.','مفيش ملف اتشارك.':'Aucun fichier partagé.','غير معروف':'inconnu'});
 /* Español */
 Object.assign(ES,{
+'معلومات وخصوصية':'Información y privacidad',
 'السابق':'Anterior','التالي':'Siguiente','الأدوات':'Herramientas',
 'اضغط الزرار واختار ملف: PDF أو PowerPoint (pptx) أو Word (docx) أو نص أو صورة.':'Pulsa el botón y elige un archivo: PDF, PowerPoint (pptx), Word (docx), texto o imagen.',
 'هايلايت، رسم، كتابة، ممحاة، ترجمة للعربي، وبعدين احفظ نسخة عليها شخبطتك.':'Subraya, dibuja, escribe, borra, traduce y luego guarda una copia con tus notas.',
@@ -330,6 +333,7 @@ Object.assign(ES,{
 'جاهز ✓ اختار ملف.':'Listo ✓ elige un archivo.','مفيش ملف اتشارك.':'No hay archivo compartido.','غير معروف':'desconocido'});
 /* Deutsch */
 Object.assign(DE,{
+'معلومات وخصوصية':'Info & Datenschutz',
 'السابق':'Zurück','التالي':'Weiter','الأدوات':'Werkzeuge',
 'اضغط الزرار واختار ملف: PDF أو PowerPoint (pptx) أو Word (docx) أو نص أو صورة.':'Tippe auf die Schaltfläche und wähle eine Datei: PDF, PowerPoint (pptx), Word (docx), Text oder Bild.',
 'هايلايت، رسم، كتابة، ممحاة، ترجمة للعربي، وبعدين احفظ نسخة عليها شخبطتك.':'Markieren, zeichnen, schreiben, radieren, übersetzen, dann eine Kopie mit deinen Notizen speichern.',
@@ -403,6 +407,7 @@ Object.assign(DE,{
 'جاهز ✓ اختار ملف.':'Bereit ✓ wähle eine Datei.','مفيش ملف اتشارك.':'Keine geteilte Datei.','غير معروف':'unbekannt'});
 /* Italiano */
 Object.assign(IT,{
+'معلومات وخصوصية':'Info e privacy',
 'السابق':'Precedente','التالي':'Successivo','الأدوات':'Strumenti',
 'اضغط الزرار واختار ملف: PDF أو PowerPoint (pptx) أو Word (docx) أو نص أو صورة.':'Tocca il pulsante e scegli un file: PDF, PowerPoint (pptx), Word (docx), testo o immagine.',
 'هايلايت، رسم، كتابة، ممحاة، ترجمة للعربي، وبعدين احفظ نسخة عليها شخبطتك.':'Evidenzia, disegna, scrivi, cancella, traduci, poi salva una copia con i tuoi appunti.',
