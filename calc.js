@@ -119,16 +119,19 @@ function place(){var w=Math.min(300,window.innerWidth-12);
 place();
 
 /* open from the tools drawer */
-function addBtn(){
- var tr=document.getElementById('trans');
- if(!tr||document.getElementById('calcOpen'))return;
- var b=document.createElement('button');b.id='calcOpen';b.className='tb';
- b.innerHTML='<i>\ud83e\uddee</i><b>'+L.open+'</b>';
- b.addEventListener('click',function(){
+function openCalc(){
   win.classList.toggle('hidden');
   var dock=document.getElementById('dock');
-  if(dock&&dock.classList.contains('open')&&!win.classList.contains('hidden'))document.getElementById('drawerBtn').click();});
- tr.parentNode.appendChild(b);}
+  if(dock&&dock.classList.contains('open')&&!win.classList.contains('hidden'))document.getElementById('drawerBtn').click();}
+function mkBtn(id){
+  var b=document.createElement('button');b.id=id;b.className='tb';
+  b.innerHTML='<i>\ud83e\uddee</i><b>'+L.open+'</b>';
+  b.addEventListener('click',openCalc);return b;}
+function addBtn(){
+  var tr=document.getElementById('trans');
+  if(tr&&!document.getElementById('calcOpen'))tr.parentNode.appendChild(mkBtn('calcOpen'));
+  var ac=document.getElementById('askchat');
+  if(ac&&!document.getElementById('calcOpen2'))ac.parentNode.insertBefore(mkBtn('calcOpen2'),ac.nextSibling);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addBtn);else addBtn();
 window.__calcOpen=function(){win.classList.remove('hidden');};
 })();

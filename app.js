@@ -481,7 +481,7 @@ xb.onclick=exitFocus;
  main.addEventListener('touchend',e=>{if(tool!='hand'||focusI||e.changedTouches.length!=1)return;const d=e.target.closest&&e.target.closest('.page');if(!d||e.target.closest('.note'))return;const t=e.changedTouches[0],now=Date.now();
   if(now-lt<380&&Math.hypot(t.clientX-lx,t.clientY-ly)<35){lt=0;e.preventDefault();try{getSelection().removeAllRanges()}catch(x){}enterFocus(+d.dataset.i+1)}else{lt=now;lx=t.clientX;ly=t.clientY}},{passive:false});
  main.addEventListener('dblclick',e=>{if(tool!='hand'||focusI)return;const d=e.target.closest&&e.target.closest('.page');if(d&&!e.target.closest('.note'))enterFocus(+d.dataset.i+1)})})();
-$('#ask').onclick=()=>{if(!pdf){toast('افتح ملف الأول');return}explain(curPage())};
+
 // sticky notes
 function savNotes(){try{localStorage.setItem(key+':notes',JSON.stringify(notes))}catch(e){}}
 function renderNotes(pg){(notes[pg.i-1]||[]).forEach(n=>mkNote(pg,n))}

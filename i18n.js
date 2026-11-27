@@ -40,7 +40,8 @@ const mo=new MutationObserver(ms=>{if(lang=='ar')return;
 /* globe picker, always visible in a corner */
 let globe,panel;
 function inSub(){return /\/(en|fr|es|de|it)\/[^/]*$/.test(location.pathname)||/\/(en|fr|es|de|it)\/$/.test(location.pathname)}
-function langUrl(l){const base=inSub()?'../':'./';return l=='ar'?base:base+l+'/'}
+function appRoot(){const p=location.pathname;const m=p.match(/^(.*\/)(?:en|fr|es|de|it)\/[^/]*$/);if(m)return m[1];return p.replace(/[^/]*$/,'')}
+function langUrl(l){const r=appRoot();return l=='ar'?r:r+l+'/'}
 function markCur(){if(!globe)return;globe.textContent='🌐 '+(lang=='ar'?'ع':lang.toUpperCase());
  if(panel)[...panel.children].forEach(b=>b.classList.toggle('cur',b.dataset.l==lang))}
 function buildGlobe(){if(document.getElementById('langGlobe'))return;
