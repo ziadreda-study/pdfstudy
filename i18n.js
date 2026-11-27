@@ -497,4 +497,10 @@ Object.assign(FR,{"📖 شرح":"📖 Expliquer","اتنسخ، والصقه في
 Object.assign(ES,{"📖 شرح":"📖 Explicar","اتنسخ، والصقه في شات المساعد وابعته":"Copiado. Pégalo en el chat del asistente y envíalo"});
 Object.assign(DE,{"📖 شرح":"📖 Erklären","اتنسخ، والصقه في شات المساعد وابعته":"Kopiert. Füge es im Assistenten-Chat ein und sende es"});
 Object.assign(IT,{"📖 شرح":"📖 Spiega","اتنسخ، والصقه في شات المساعد وابعته":"Copiato. Incollalo nella chat dell'assistente e invialo"});
+/* v10: text tool label */
+Object.assign(EN,{"كتابة":"Writing"});
+Object.assign(FR,{"كتابة":"Écrire"});
+Object.assign(ES,{"كتابة":"Escribir"});
+Object.assign(DE,{"كتابة":"Schreiben"});
+Object.assign(IT,{"كتابة":"Scrivere"});
 })();

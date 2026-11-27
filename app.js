@@ -432,10 +432,10 @@ async function pageBlob(i){const pg=await pdf.getPage(i),k=1.6,v=pg.getViewport(
  ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:ctx,viewport:v}).promise;ctx.setTransform(1,0,0,1,0,0);(ann[i-1]||[]).forEach(o=>drawObj(ctx,o,k));(notes[i-1]||[]).forEach(n=>drawNote(ctx,n,k));
  return new Promise(r=>c.toBlob(r,'image/jpeg',.85))}
 async function explain(i,sel){const txt=sel||await pageText(i);const blob=await pageBlob(i);const file=new File([blob],'slide-'+i+'.jpg',{type:'image/jpeg'});
- sheet((s,mk)=>{const h=document.createElement('h3');h.textContent='💬 اسألني - صفحة '+i;s.appendChild(h);
+ sheet((s,mk)=>{const h=document.createElement('h3');h.textContent='📖 شرح - صفحة '+i;s.appendChild(h);
   const p=document.createElement('div');p.style.cssText='font-size:14px;line-height:1.7;opacity:.9';p.textContent='الشرح بالذكاء الاصطناعي بيتم في شات واتساب مع المساعد، مش جوه الصفحة. ابعت الصورة دي له واكتب "اشرحلي الشريحة دي بالعربي".';s.appendChild(p);
   const im=document.createElement('img');im.src=URL.createObjectURL(blob);s.appendChild(im);
-  if(navigator.canShare&&navigator.canShare({files:[file]}))mk('📤 ابعت الشريحة للمساعد (شير)','',async()=>{try{await navigator.share({files:[file],text:(sel?'اسألني عن الجزء ده: '+sel:'اسألني: اشرحلي الصفحة دي بالعربي')})}catch(e){if(e.name!=='AbortError')toast('الشير مش شغال، اضغط مطولاً على الصورة واحفظها')}});
+  if(navigator.canShare&&navigator.canShare({files:[file]}))mk('📤 ابعت الشريحة للمساعد (شير)','',async()=>{try{await navigator.share({files:[file],text:(sel?'اشرحلي الجزء ده بالعربي: '+sel:'اشرحلي الصفحة دي بالعربي')})}catch(e){if(e.name!=='AbortError')toast('الشير مش شغال، اضغط مطولاً على الصورة واحفظها')}});
   else{const q=document.createElement('div');q.style.cssText='font-size:14px';q.textContent='الشير مش متاح هنا: اضغط مطولاً على الصورة واحفظها، وابعتها في الواتساب.';s.appendChild(q)}
   if(txt.trim()){const l=document.createElement('div');l.textContent='نص الصفحة (تقدر تعمله تحديد ونسخ):';l.style.marginTop='8px';s.appendChild(l);const ta=document.createElement('textarea');ta.readOnly=true;ta.value=txt;ta.dir='auto';s.appendChild(ta)}})}
 
