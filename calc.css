@@ -1,0 +1,20 @@
+/* مذاكرتك scientific calculator - floating draggable window */
+#calcWin{position:fixed;z-index:999;width:300px;max-width:calc(100vw - 12px);background:#171a21;border:1px solid #2b3242;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.55);font-family:inherit;color:#e8eaf0;user-select:none;-webkit-user-select:none;touch-action:none}
+#calcWin.hidden{display:none}
+#calcHead{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;cursor:grab;background:#1e222c;border-radius:14px 14px 0 0;touch-action:none}
+#calcHead:active{cursor:grabbing}
+#calcHead b{font-size:13px;font-weight:600}
+#calcX{border:0;background:#2b3242;color:#e8eaf0;width:26px;height:26px;border-radius:8px;font-size:14px;cursor:pointer;line-height:1}
+#calcX:hover{background:#e03131}
+#calcScr{padding:10px 12px 4px;text-align:end;min-height:56px}
+#calcExpr{font-size:13px;color:#9aa3b2;min-height:18px;word-break:break-all}
+#calcRes{font-size:26px;font-weight:700;min-height:32px;word-break:break-all}
+#calcRes.err{color:#ff8789;font-size:16px}
+#calcPad{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:8px 10px 12px}
+#calcPad button{border:0;border-radius:8px;background:#232836;color:#e8eaf0;font-size:15px;padding:10px 0;cursor:pointer;font-family:inherit}
+#calcPad button:active{background:#333b4d}
+#calcPad .fn{background:#1d2733;color:#8ab4f8;font-size:13px}
+#calcPad .mem{background:#1d2733;color:#7ee0a3;font-size:12px}
+#calcPad .op{background:#2d2450;color:#c4b5fd}
+#calcPad .eq{background:#6c5ce7;color:#fff;font-weight:700;grid-row:span 2}
+#calcPad .dg{background:#3d2a1e;color:#ffd8a8;font-size:11px}
