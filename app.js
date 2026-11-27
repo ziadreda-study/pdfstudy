@@ -567,7 +567,35 @@ pop.addEventListener('pointerdown',e=>e.preventDefault());pop.addEventListener('
 function copyText(t){let ok=false;try{const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(ta);ta.select();ok=document.execCommand('copy');ta.remove()}catch(e){}
  if(ok)toast('اتنسخ ✓');else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('اتنسخ ✓'),()=>toast('النسخ مش متاح هنا، استخدم زرار نسخ الأندرويد'));else toast('النسخ مش متاح هنا')}
 const EXPLAIN_API=(window.__EXPLAIN_API||'https://ziad-pdfstudy.netlify.app/.netlify/functions/explain');
+const EXPLAIN_SYS=['انت مساعد مذاكرة لطالب طب مصري بيفهم عربي مصري.','هتوصلك "النص المحدد" اللي الطالب معلّم عليه، وكمان "سياق الصفحة" اللي حواليه.',
+ 'المطلوب: شرح للنص المحدد بالعربي المصري البسيط، دقيق ومطابق للمعنى العلمي، ومبني على فهم النص في سياقه.',
+ 'قواعد:','1) افهم النص الأول من سياقه (مصطلح ناقص، اختصار، أو جملة مبتورة توضح من السياق).',
+ '2) سيب أسماء الأدوية والبكتيريا والفيروسات والأمراض والمصطلحات العلمية والطبية بالإنجليزي زي ما هي.',
+ '3) اشرح ليه الكلام ده مهم وامتى يتقال، مش مجرد إعادة صياغة.','4) ماتألفش أي معلومة مش موجودة في النص أو سياقه.',
+ '5) الطول: من 3 لـ 6 سطور قصيرة. كل نقطة في سطر تبدا بـ "• ".','6) مفيش مقدمات. ادخل في الشرح مباشرة.',
+ '7) نص عادي بس: ممنوع markdown أو نجوم ** أو عناوين #.'].join('\n');
+function postJSON(url,payload,ms){return new Promise((res,rej)=>{
+ const c=(typeof AbortController!='undefined')?new AbortController():null;
+ const to=setTimeout(()=>{try{c&&c.abort()}catch(e){};rej(Error('timeout'))},ms);
+ fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:payload,signal:c?c.signal:undefined})
+  .then(async r=>{clearTimeout(to);const j=await r.json().catch(()=>({}));res({ok:r.ok,status:r.status,j})})
+  .catch(e=>{clearTimeout(to);rej(e&&e.name=='AbortError'?Error('timeout'):e)})})}
 async function pageContext(p){try{const t=await pageText(p);return String(t||'').replace(/\s+/g,' ').trim().slice(0,2000)}catch(e){return''}}
+async function aiExplain(text,context){
+ let firstErr='';
+ try{
+  const r=await postJSON(EXPLAIN_API,JSON.stringify({text,context}),15000);
+  if(r.ok&&r.j&&r.j.explanation)return r.j.explanation;
+  firstErr=(r.j&&(r.j.detail||r.j.error))||('HTTP '+r.status);
+ }catch(e){firstErr=(e&&e.message)||'network'}
+ try{
+  const user='النص المحدد:\n'+text+(context?'\n\nسياق الصفحة (للتوضيح بس):\n'+context:'');
+  const r2=await postJSON('https://text.pollinations.ai/openai',JSON.stringify({model:'openai-fast',messages:[{role:'system',content:EXPLAIN_SYS},{role:'user',content:user}],max_tokens:700}),30000);
+  const c=r2.j&&r2.j.choices&&r2.j.choices[0]&&r2.j.choices[0].message&&r2.j.choices[0].message.content;
+  if(r2.ok&&c)return String(c).trim();
+  throw Error((r2.j&&r2.j.error&&(r2.j.error.message||r2.j.error))||('HTTP '+r2.status));
+ }catch(e2){throw Error(firstErr==='timeout'?'النت بطيء والشرح واخد وقت':(firstErr||'فشل'))}
+}
 function explainSel(t){
  const msg='اشرحلي الجزء ده من الملف بالعربي المصري البسيط، شرح دقيق ومطابق للنص، وسيب المصطلحات العلمية والطبية بالإنجليزي زي ما هي:\n\n'+t;
  const share=()=>{copyText(msg);try{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank')}catch(e){}toast('اتنسخ، والصقه في شات المساعد وابعته')};
@@ -579,17 +607,16 @@ function explainSel(t){
   const out=document.createElement('div');out.style.cssText='font-size:15px;line-height:1.95;white-space:pre-wrap;text-align:start';s.appendChild(out);
   const st=document.createElement('div');st.style.cssText='font-size:13px;color:var(--mute)';st.textContent=__T('بجهز الشرح...');s.appendChild(st);
   mk(__T('ابعت للمساعد (واتساب)'),'g',share);
-  let done=false;
   try{
-   const body=JSON.stringify({text:t,context:await pageContext(p)});
-   const r=await fetch(EXPLAIN_API,{method:'POST',headers:{'Content-Type':'application/json'},body});
-   const j=await r.json().catch(()=>({}));
-   if(!r.ok||!j.explanation)throw Error(j.detail||j.error||('HTTP '+r.status));
-   out.textContent=j.explanation;st.remove();done=true;
-   mk(__T('انسخ الشرح'),'g',()=>copyText(j.explanation));
+   const ex=await aiExplain(t,await pageContext(p));
+   out.textContent=ex;st.remove();
+   mk(__T('انسخ الشرح'),'g',()=>copyText(ex));
    mk(__T('شرح تاني'),'g',()=>explainSel(t));
-  }catch(e){st.style.color='#ff8a8a';st.textContent=__T('الشرح مش متاح دلوقتي')+' ('+((e&&e.message)||e)+'). '+__T('تقدر تبعته للمساعد من الزرار اللي تحت.');}
-  if(!done){const b2=document.createElement('div');b2.style.cssText='font-size:12px;color:var(--mute);margin-top:6px';b2.textContent=__T('الشرح بيشتغل على النت، ومحتاج سيرفر الشرح شغال.');s.appendChild(b2)}
+  }catch(e){
+   st.style.color='#ff8a8a';st.textContent=__T('الشرح مش راضي يجي')+': '+((e&&e.message)||e);
+   const hint=document.createElement('div');hint.style.cssText='font-size:12px;color:var(--mute);line-height:1.7';hint.textContent=__T('اتأكد إن النت شغال وجرب تاني، أو ابعت النص للمساعد من الزرار اللي تحت.');s.appendChild(hint);
+   mk(__T('جرب تاني'),'',()=>explainSel(t));
+  }
  });
 }
 pop.onclick=e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;const t=selTxt,p=selPg;pop.style.display='none';try{getSelection().removeAllRanges()}catch(x){}
