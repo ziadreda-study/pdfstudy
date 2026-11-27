@@ -41,7 +41,7 @@ try {
     start();
 } catch (e) { ok = false; setStatus('فشل التشغيل: ' + String(e), true); }
 if (ok) setStatus('جاهز ✓ اختار ملف.');
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register(new URL('sw.js', document.baseURI).href).catch(() => {});
 
 if (window.innerWidth >= 900) setTimeout(() => { const d = document.getElementById('dock'); if (d && !d.classList.contains('open')) document.getElementById('drawerBtn').click(); }, 400);
 

@@ -1,0 +1,74 @@
+<!doctype html><html lang="fr" dir="ltr"><head><meta charset="utf-8"><base href="../"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#14151a"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>مذاكرتك - Étudier PDF et diapositives</title><meta name="description" content="Mothakertak (مذاكرتك) : ouvrez vos PDF, PowerPoint et Word et étudiez-les - surlignage, cartes mémoire, traduction et notes. Gratuit, vos fichiers restent sur votre appareil.">
+<link rel="canonical" href="https://ziad-pdfstudy.netlify.app/fr/">
+<link rel="alternate" hreflang="ar" href="https://ziad-pdfstudy.netlify.app/">
+<link rel="alternate" hreflang="en" href="https://ziad-pdfstudy.netlify.app/en/">
+<link rel="alternate" hreflang="fr" href="https://ziad-pdfstudy.netlify.app/fr/">
+<link rel="alternate" hreflang="es" href="https://ziad-pdfstudy.netlify.app/es/">
+<link rel="alternate" hreflang="de" href="https://ziad-pdfstudy.netlify.app/de/">
+<link rel="alternate" hreflang="it" href="https://ziad-pdfstudy.netlify.app/it/">
+<link rel="alternate" hreflang="x-default" href="https://ziad-pdfstudy.netlify.app/">
+<link rel="stylesheet" href="app.css"><style>html,body{overflow:hidden;margin:0}</style></head><body><div id="root"><div id="wrap">
+<div id="nav">
+ <button id="prev" class="nb big" title="Précédent">‹</button>
+ <span class="pg" dir="ltr"><input id="pn" type="number" min="1" value="1"><span id="pt">/0</span></span>
+ <button id="next" class="nb big" title="Suivant">›</button>
+ <button id="drawerBtn" class="nb" title="Outils">🛠️</button>
+ <span id="info"></span>
+</div>
+<div id="body">
+ <div id="main"><div id="drop"><h1>📘 مذاكرتك</h1><p>Appuyez sur le bouton et choisissez un fichier : PDF, PowerPoint (pptx), Word (docx), texte ou image.<br>Surlignez, dessinez, écrivez, effacez, traduisez, puis enregistrez une copie annotée.<br>Le fichier n'est envoyé nulle part, tout reste sur votre appareil.</p><label class="go pick">Choisir un fichier<input id="file2" type="file"></label></div></div>
+ <div id="dock">
+  <button id="handle" aria-label="Outils"><span></span></button>
+  <div id="drawer">
+   <div class="sec">Fichier et navigation</div>
+   <div class="grid">
+    <label class="tb pick"><i>📂</i><b>Ouvrir un fichier</b><input id="file" type="file"></label>
+    <button id="thumbs" class="tb"><i>▦</i><b>Pages</b></button>
+   </div>
+   <div class="sec">Outils</div>
+   <div class="grid">
+    <button data-tool="hand" class="tb on"><i>✋</i><b>Lecture</b></button>
+    <button data-tool="pen" class="tb"><i>✏️</i><b>Stylo</b></button>
+    <button data-tool="hl" class="tb"><i>🖍️</i><b>Surligner</b></button>
+    <button data-tool="rect" class="tb"><i>▭</i><b>Rectangle</b></button>
+    <button data-tool="text" class="tb"><i>🅣</i><b>Texte</b></button>
+    <button data-tool="eraser" class="tb"><i>🧽</i><b>Gomme</b></button>
+    <button id="trans" class="tb"><i>🌐</i><b>Traduire</b></button>
+   </div>
+   <div class="sec">Couleur et épaisseur</div>
+   <div id="sw"></div>
+   <input id="color" type="color" value="#e03131" title="Couleur">
+   <input id="size" type="range" min="1" max="30" value="3" title="Épaisseur">
+   <div class="grid">
+    <button id="undo" class="tb"><i>↶</i><b>Annuler</b></button>
+    <button id="redo" class="tb"><i>↷</i><b>Rétablir</b></button>
+   </div>
+   <div class="sec">Affichage</div>
+   <div class="grid">
+    <button id="zin" class="tb"><i>＋</i><b>Zoom avant</b></button>
+    <button id="zout" class="tb"><i>－</i><b>Zoom arrière</b></button>
+    <button id="fit" class="tb"><i>⤢</i><b>Ajuster la page</b></button>
+    <button id="night" class="tb"><i>🌙</i><b>Nuit</b></button>
+   </div>
+   <span id="zv" class="zv">100%</span>
+   <div class="sec">Étude</div>
+   <div class="grid">
+    <button id="note" class="tb"><i>📝</i><b>Note</b></button>
+    <button id="ask" class="tb"><i>💬</i><b>Demande-moi</b></button>
+    <button id="readpg" class="tb"><i>📷</i><b>Lire la page</b></button>
+    <button id="cards" class="tb"><i>🃏</i><b>Cartes</b></button>
+    <button id="fsbtn" class="tb"><i>⛶</i><b>Plein écran</b></button>
+    <button id="askchat" class="tb"><i>🤖</i><b>Demander au chat</b></button>
+    <button id="srch" class="tb"><i>🔎</i><b>Rechercher</b></button>
+    <button id="bm" class="tb"><i>⭐</i><b>Marquer</b></button>
+    <button id="bml" class="tb"><i>📚</i><b>Marquées</b></button>
+    <button id="tmr" class="tb"><i>⏱</i><b>Minuteur</b></button>
+   </div>
+   <div class="sec">Enregistrer</div>
+   <div class="grid one"><button id="save" class="tb acc"><i>💾</i><b>Enregistrer PDF</b></button></div>
+  </div>
+ </div>
+</div>
+<div id="toast"></div>
+</div>
+</div><script>window.__FORCE_LANG='fr'</script><script src="i18n.js"></script><script src="tesseract.min.js"></script><script type="module" src="main.js"></script></body></html>

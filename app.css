@@ -115,3 +115,13 @@ body.land #sheet button.sb{padding:9px 12px;margin:3px 0}
 .note textarea.nt::placeholder{color:#8a8a8a}
 .note .ng{width:40px!important;height:40px!important;background:linear-gradient(135deg,transparent 55%,#8a8672 55%,#8a8672 62%,transparent 62%,transparent 72%,#8a8672 72%,#8a8672 79%,transparent 79%)!important;opacity:.85}
 @media (min-width:900px){#dock.open #drawer{width:220px}.tb{min-height:56px}}
+
+/* i18n: LTR overrides + language globe */
+html[dir="ltr"] #nav,html[dir="ltr"] #drawer,html[dir="ltr"] #sheet,html[dir="ltr"] #selpop{direction:ltr}
+#langGlobe{position:fixed;top:60px;left:6px;z-index:80;border:1px solid var(--line);background:#23252ecc;color:#fff;border-radius:16px;padding:5px 10px;font-size:14px;font-family:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+#langGlobe.pulse{animation:lgp 1.6s ease-in-out 3}
+@keyframes lgp{50%{transform:scale(1.15)}}
+#langPanel{position:fixed;top:94px;left:6px;z-index:81;display:none;flex-direction:column;background:#23252e;border:1px solid var(--acc);border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.6)}
+#langPanel.open{display:flex}
+#langPanel button{background:transparent;border:0;color:#fff;padding:10px 18px;font-size:15px;font-family:inherit;text-align:left;cursor:pointer}
+#langPanel button.cur{background:var(--acc)}

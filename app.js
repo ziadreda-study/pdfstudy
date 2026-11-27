@@ -2,6 +2,7 @@ export default function start(){
 
 (function(){
 const $=s=>document.querySelector(s);
+const __T=x=>(window.I18N&&window.I18N.t)?window.I18N.t(x):x,__L=()=>window.I18N?window.I18N.lang():'ar',__D=()=>window.I18N?window.I18N.dir():'rtl';
 pdfjsLib.GlobalWorkerOptions.workerSrc='inline-worker.js';
 const st=(m,bad)=>{try{window.__setStatus&&window.__setStatus(m,bad)}catch(e){}};
 const main=$('#main');
@@ -177,7 +178,7 @@ function showSave(bytes,name){
  d.onclick=()=>{
   let b64='';const CH=0x8000;for(let k=0;k<bytes.length;k+=CH)b64+=String.fromCharCode.apply(null,bytes.subarray(k,k+CH));b64=btoa(b64);
   const esc=name.replace(/[<>&"]/g,'');
-  const html='<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc+'</title><body style="font-family:sans-serif;background:#1e1f22;color:#fff;text-align:center;padding:30px 16px"><h2>الملف جاهز ✅</h2><p style="word-break:break-all;direction:ltr">'+esc+'</p><a id="a" style="display:block;background:#2f9e44;color:#fff;border-radius:10px;padding:18px;font-size:20px;text-decoration:none;margin:20px 0">⬇️ نزّل الملف</a><p style="opacity:.7;line-height:1.7">لو التحميل ما بدأش دوس الزرار. بعد التحميل ارجع لصفحة المذاكرة.</p><script>var s=atob("'+b64+'"),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);var a=document.getElementById("a");a.href=URL.createObjectURL(new Blob([u],{type:"application/pdf"}));a.download="'+esc+'";<\/script></body></html>';
+  const html='<!doctype html><html lang="'+__L()+'" dir="'+__D()+'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc+'</title><body style="font-family:sans-serif;background:#1e1f22;color:#fff;text-align:center;padding:30px 16px"><h2>'+__T('الملف جاهز ✅')+'</h2><p style="word-break:break-all;direction:ltr">'+esc+'</p><a id="a" style="display:block;background:#2f9e44;color:#fff;border-radius:10px;padding:18px;font-size:20px;text-decoration:none;margin:20px 0">'+__T('⬇️ نزّل الملف')+'</a><p style="opacity:.7;line-height:1.7">'+__T('لو التحميل ما بدأش دوس الزرار. بعد التحميل ارجع لصفحة المذاكرة.')+'</p><script>var s=atob("'+b64+'"),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);var a=document.getElementById("a");a.href=URL.createObjectURL(new Blob([u],{type:"application/pdf"}));a.download="'+esc+'";<\/script></body></html>';
   const hu=URL.createObjectURL(new Blob([html],{type:'text/html'}));
   try{window.open(hu,'_blank')}catch(e){toast('المتصفح منع فتح التبويب')}
  };
@@ -237,7 +238,7 @@ async function unzip(buf){const u=new Uint8Array(buf),dv=new DataView(buf);let e
   return new Uint8Array(await new Response(new Blob([d]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer())}}}
 function xmlParas(bytes,pTag,tTag){const doc=new DOMParser().parseFromString(new TextDecoder().decode(bytes),'application/xml');
  return[...doc.getElementsByTagName(pTag)].map(p=>[...p.getElementsByTagName(tTag)].map(t=>t.textContent).join('')).filter(s=>s.trim())}
-function slidePage(paras,notes){const W=960,H=540,body=paras.slice(1),title=paras[0]||'',text=paras.join('\n')+(notes.length?'\n\n[ملاحظات المتحدث]\n'+notes.join('\n'):'');
+function slidePage(paras,notes){const W=960,H=540,body=paras.slice(1),title=paras[0]||'',text=paras.join('\n')+(notes.length?'\n\n['+__T('ملاحظات المتحدث')+']\n'+notes.join('\n'):'');
  return{text,getViewport:({scale})=>({width:W*scale,height:H*scale}),render({canvasContext:ctx,viewport}){REC=this.boxes=[];const kk=viewport.width/W;ctx.setTransform(kk,0,0,kk,0,0);
   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);ctx.fillStyle='#5865f2';ctx.fillRect(0,0,W,12);
   const mw=W-100;const tl=wrap(title,mw,'bold 38px '+FF).slice(0,3);let y=drawLines(ctx,tl,50,40,38,46,mw,'#1a1b3a',true)+14;
@@ -247,7 +248,7 @@ function slidePage(paras,notes){const W=960,H=540,body=paras.slice(1),title=para
 async function pptxPages(buf){const z=await unzip(buf);const num=n=>+(n.match(/(\d+)\.xml$/)||[0,0])[1];
  const sl=z.names.filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n)).sort((a,b)=>num(a)-num(b));if(!sl.length)throw Error('مفيش شرايح في الملف');
  const out=[];for(const n of sl){const paras=xmlParas(await z.get(n),'a:p','a:t');const nb=await z.get('ppt/notesSlides/notesSlide'+num(n)+'.xml');
-  const notes=nb?xmlParas(nb,'a:p','a:t').filter(s=>!/^\d+$/.test(s.trim())):[];out.push(slidePage(paras.length?paras:['(شريحة بدون نص)'],notes))}
+  const notes=nb?xmlParas(nb,'a:p','a:t').filter(s=>!/^\d+$/.test(s.trim())):[];out.push(slidePage(paras.length?paras:[__T('(شريحة بدون نص)')],notes))}
  toast('PowerPoint: بيتعرض النص بس، الصور والأشكال مش بتظهر');return out}
 function textPages(txt){const W=595,H=842,M=40,mw=W-2*M,fs=15,lh=22,per=Math.floor((H-2*M)/lh),pgs=[];let cur=[];
  const lines=[];txt.split('\n').forEach(p=>{if(!p.trim())lines.push('');else wrap(p,mw,fs+'px '+FF).forEach(l=>lines.push(l))});
@@ -286,7 +287,7 @@ function pptLegacyPages(buf){const ole=oleRead(buf);const d=ole.get('PowerPoint 
   w2(0,d.length)}
  if(!pages.length)throw Error('مقدرتش أطلّع نص من الملف ده');
  toast('PowerPoint قديم (ppt): بيتعرض النص بس، الصور والأشكال مش بتظهر');
- return pages.map(p=>slidePage(p.length?p:['(شريحة بدون نص)'],[]))}
+ return pages.map(p=>slidePage(p.length?p:[__T('(شريحة بدون نص)')],[]))}
 function docLegacyText(buf){const ole=oleRead(buf);const w=ole.get('WordDocument');if(!w)throw Error('مش لاقي نص في الملف');
  const dv=new DataView(w.buffer,w.byteOffset,w.byteLength);if(dv.getUint16(0,true)!=0xA5EC)throw Error('ملف Word قديم جدًا أو مش سليم');
  const flags=dv.getUint16(10,true);if(flags&0x100)throw Error('الملف مشفّر');
@@ -409,8 +410,8 @@ $('#thumbs').onclick=()=>{if(!pdf){toast('افتح ملف الأول');return}sh
 // translation
 const enc=encodeURIComponent;
 async function jget(url){const c=new AbortController(),t=setTimeout(()=>c.abort(),15000);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}}
-async function gtr(q){const j=await jget('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ar&dt=t&q='+enc(q));return j[0].map(x=>x[0]).join('')}
-async function mtr(q){const j=await jget('https://api.mymemory.translated.net/get?q='+enc(q)+'&langpair=en|ar');if(j.responseStatus!=200)throw Error(j.responseDetails||'mymemory');return j.responseData.translatedText}
+async function gtr(q){const j=await jget('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl='+__L()+'&dt=t&q='+enc(q));return j[0].map(x=>x[0]).join('')}
+async function mtr(q){const j=await jget('https://api.mymemory.translated.net/get?q='+enc(q)+'&langpair=en|'+__L());if(j.responseStatus!=200)throw Error(j.responseDetails||'mymemory');return j.responseData.translatedText}
 let engine='google';
 async function trChunk(q){if(engine=='google'){try{return await gtr(q)}catch(e){return await mtr(q.slice(0,480))}}
  try{return await mtr(q.slice(0,480))}catch(e){return await gtr(q)}}

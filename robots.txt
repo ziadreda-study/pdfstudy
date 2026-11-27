@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ziad-pdfstudy.netlify.app/sitemap.xml
