@@ -34,18 +34,25 @@ const ready = (async () => {
     const g = window;
     const pick = (m, k) => (m.default && m.default[k] ? m.default : (m[k] ? m : null));
     const [pdfjsMod, workerMod, pdflibMod] = await Promise.all([
-        import('./pdfjs.js'), import('./worker.js'), import('./pdflib.js')]);
+        import('./pdfjs.js?v=6'), import('./worker.js?v=6'), import('./pdflib.js?v=6')]);
     g.pdfjsLib = g.pdfjsLib || pick(pdfjsMod, 'getDocument');
     g.pdfjsWorker = g.pdfjsWorker || pick(workerMod, 'WorkerMessageHandler');
     g.PDFLib = g.PDFLib || pick(pdflibMod, 'PDFDocument');
     const miss = ['pdfjsLib', 'pdfjsWorker', 'PDFLib'].filter((k) => !g[k]);
     if (miss.length) throw new Error('مكتبات ناقصة: ' + miss.join(', '));
-    const appMod = await import('./app.js');
+    const appMod = await import('./app.js?v=6');
     appMod.default();
 })();
-ready.then(() => setStatus('جاهز ✓ اختار ملف.')).catch((e) => setStatus('فشل التشغيل: ' + String(e), true));
+ready.then(() => { const b = document.getElementById('booting'); if (b) b.remove(); setStatus('جاهز ✓ اختار ملف.'); }).catch((e) => { const b = document.getElementById('booting'); if (b) b.textContent = 'فشل التشغيل: ' + String(e); setStatus('فشل التشغيل: ' + String(e), true); });
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register(new URL('sw.js', document.baseURI).href).catch(() => {});
+if ('serviceWorker' in navigator) {
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register(new URL('sw.js', document.baseURI).href, { updateViaCache: 'none' }).catch(() => {});
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || window.__swReloaded) return;
+        window.__swReloaded = true; location.reload();
+    });
+}
 
 if (window.innerWidth >= 900) setTimeout(() => { const d = document.getElementById('dock'); if (d && !d.classList.contains('open')) document.getElementById('drawerBtn').click(); }, 400);
 

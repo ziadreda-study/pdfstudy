@@ -1,0 +1,15 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مذاكرتك - إعادة ضبط</title></head>
+<body style="background:#14151a;color:#e8eaf0;font:16px/1.7 sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center">
+<div id="m">⏳ بيتم مسح النسخة المحفوظة القديمة...</div>
+<script>
+(async()=>{
+ const m=document.getElementById('m');
+ try{
+  if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();for(const r of rs)await r.unregister();}
+  if('caches' in window){const ks=await caches.keys();for(const k of ks)await caches.delete(k);}
+  try{localStorage.removeItem('pdfstudy:lang')}catch(e){}
+  m.textContent='✓ اتمسح. بيرجع للتطبيق دلوقتي...';
+ }catch(e){m.textContent='حصل خطأ. اقفل الصفحة وافتحها تاني.';}
+ setTimeout(()=>{location.replace(new URL('./',location.href).href)},900);
+})();
+</script></body></html>
