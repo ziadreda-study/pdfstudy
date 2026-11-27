@@ -566,7 +566,7 @@ document.addEventListener('selectionchange',()=>{clearTimeout(selT);selT=setTime
 pop.addEventListener('pointerdown',e=>e.preventDefault());pop.addEventListener('mousedown',e=>e.preventDefault());
 function copyText(t){let ok=false;try{const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(ta);ta.select();ok=document.execCommand('copy');ta.remove()}catch(e){}
  if(ok)toast('اتنسخ ✓');else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('اتنسخ ✓'),()=>toast('النسخ مش متاح هنا، استخدم زرار نسخ الأندرويد'));else toast('النسخ مش متاح هنا')}
-function explainSel(t){const msg='اشرحلي الجزء ده من الملف بالعربي، شرح واضح ومبسط:\n\n'+t;
+function explainSel(t){const msg='اشرحلي الجزء ده من الملف بالعربي المصري البسيط، شرح دقيق ومطابق للنص، وسيب المصطلحات العلمية والطبية بالإنجليزي زي ما هي:\n\n'+t;
  const fallback=()=>{copyText(msg);try{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank')}catch(e){}toast('اتنسخ، والصقه في شات المساعد وابعته')};
  if(navigator.share){navigator.share({text:msg}).catch(e=>{if(e&&e.name=='AbortError')return;fallback()});return}
  fallback()}
