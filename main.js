@@ -1,7 +1,4 @@
-import * as pdfjsMod from './pdfjs.js';
-import * as workerMod from './worker.js';
-import * as pdflibMod from './pdflib.js';
-import start from './app.js';
+// مذاكرتك bootstrap: paint the shell instantly, load heavy libs (pdfjs/worker/pdflib ~1.9MB) after first paint.
 window.__OCR = true;
 const wrap = document.getElementById('wrap');
 const shell = document.createElement('div');
@@ -29,18 +26,25 @@ const setStatus = (m, bad) => { status.textContent = m; status.style.color = bad
 window.__setStatus = setStatus;
 addEventListener('error', (e) => setStatus('خطأ في الصفحة: ' + e.message, true));
 addEventListener('unhandledrejection', (e) => setStatus('خطأ: ' + ((e.reason && (e.reason.message || e.reason)) || 'غير معروف'), true));
-let ok = true;
-try {
+
+// show a lightweight "preparing" note right away (translated by i18n.js); heavy libs load below
+status.textContent = 'جاري التحضير...'; status.style.color = '#9f9'; status.style.display = ''; size();
+
+const ready = (async () => {
     const g = window;
     const pick = (m, k) => (m.default && m.default[k] ? m.default : (m[k] ? m : null));
+    const [pdfjsMod, workerMod, pdflibMod] = await Promise.all([
+        import('./pdfjs.js'), import('./worker.js'), import('./pdflib.js')]);
     g.pdfjsLib = g.pdfjsLib || pick(pdfjsMod, 'getDocument');
     g.pdfjsWorker = g.pdfjsWorker || pick(workerMod, 'WorkerMessageHandler');
     g.PDFLib = g.PDFLib || pick(pdflibMod, 'PDFDocument');
     const miss = ['pdfjsLib', 'pdfjsWorker', 'PDFLib'].filter((k) => !g[k]);
     if (miss.length) throw new Error('مكتبات ناقصة: ' + miss.join(', '));
-    start();
-} catch (e) { ok = false; setStatus('فشل التشغيل: ' + String(e), true); }
-if (ok) setStatus('جاهز ✓ اختار ملف.');
+    const appMod = await import('./app.js');
+    appMod.default();
+})();
+ready.then(() => setStatus('جاهز ✓ اختار ملف.')).catch((e) => setStatus('فشل التشغيل: ' + String(e), true));
+
 if ('serviceWorker' in navigator) navigator.serviceWorker.register(new URL('sw.js', document.baseURI).href).catch(() => {});
 
 if (window.innerWidth >= 900) setTimeout(() => { const d = document.getElementById('dock'); if (d && !d.classList.contains('open')) document.getElementById('drawerBtn').click(); }, 400);
@@ -48,6 +52,7 @@ if (window.innerWidth >= 900) setTimeout(() => { const d = document.getElementBy
 (async () => {
     if (!/[?&]shared=1/.test(location.search)) return;
     try {
+        await ready;
         const c = await caches.open('share-inbox');
         const reqs = await c.keys();
         if (!reqs.length) { setStatus('مفيش ملف اتشارك.', true); return; }

@@ -359,12 +359,13 @@ async function explain(i,sel){const txt=sel||await pageText(i);const blob=await 
   if(txt.trim()){const l=document.createElement('div');l.textContent='نص الصفحة (تقدر تعمله تحديد ونسخ):';l.style.marginTop='8px';s.appendChild(l);const ta=document.createElement('textarea');ta.readOnly=true;ta.value=txt;ta.dir='auto';s.appendChild(ta)}})}
 
 let ocrW=null,ocrLang='';
+async function ensureTess(){if(window.Tesseract)return;await new Promise((res,rej)=>{const s=document.createElement('script');s.src=new URL('tesseract.min.js',document.baseURI).href;s.onload=res;s.onerror=()=>rej(new Error('tesseract load failed'));document.head.appendChild(s)});}
 async function ocrPage(i,lang){const L=lang||'eng';
  sheet((s,mk)=>{const h=document.createElement('h3');h.textContent='🔍 قراءة نص الصفحة '+i+' (على الموبايل)';s.appendChild(h);
   const p=document.createElement('div');p.style.cssText='font-size:14px;line-height:1.7';p.textContent='جاري التحضير...';s.appendChild(p);
   (async()=>{try{
    if(!ocrW||ocrLang!=L){if(ocrW){try{await ocrW.terminate()}catch(e){}ocrW=null}
-    ocrW=await Tesseract.createWorker(L,1,{workerPath:'./worker.min.js',corePath:'./',langPath:'./',gzip:true,logger:m=>{if(m.status)p.textContent=m.status+(m.progress!=null?' '+Math.round(m.progress*100)+'%':'')}});ocrLang=L}
+    await ensureTess();ocrW=await Tesseract.createWorker(L,1,{workerPath:'./worker.min.js',corePath:'./',langPath:'./',gzip:true,logger:m=>{if(m.status)p.textContent=m.status+(m.progress!=null?' '+Math.round(m.progress*100)+'%':'')}});ocrLang=L}
    const pg=await pdf.getPage(i),v=pg.getViewport({scale:Math.min(3,2200/pg.getViewport({scale:1}).width)}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:ctx,viewport:v}).promise;
    p.textContent='بيقرأ النص...';const r=await ocrW.recognize(c);const txt=(r.data.text||'').trim();
    p.textContent=txt?'النص اللي اتقرأ (راجعه، الدقة بتقل مع الصور الوحشة والخط اليدوي):':'ماقدرتش ألاقي نص في الصفحة دي.';
