@@ -623,7 +623,7 @@ function explainSel(t){
    go.disabled=true;go.style.opacity='.6';out.textContent='';st.style.color='var(--mute)';st.textContent=__T('بجهز الشرح...');
    try{
     const ex=await aiExplain(t,ctx);
-    out.textContent=ex;st.remove();go.remove();
+    out.textContent=ex;st.remove();go.remove();try{cbtn.remove()}catch(x){}
     mk(__T('انسخ الشرح'),'g',()=>copyText(ex));
     mk(__T('شرح تاني'),'g',()=>explainSel(t));
    }catch(e){
