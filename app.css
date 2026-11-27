@@ -128,3 +128,14 @@ html[dir="ltr"] #nav,html[dir="ltr"] #drawer,html[dir="ltr"] #sheet,html[dir="lt
 
 .infolink{display:block;text-align:center;font-size:11px;color:#8a90a0;padding:10px 4px 4px;margin-top:8px;text-decoration:none;border-top:1px solid #262b36}
 .infolink:hover{color:#c4b5fd}
+
+/* v7: floating text toolbar + editing box */
+.txbar{position:absolute;z-index:9;display:flex;align-items:center;gap:4px;flex-wrap:wrap;background:rgba(22,24,31,.97);border:1px solid #3d4359;border-radius:12px;padding:5px 6px;box-shadow:0 8px 22px rgba(0,0,0,.55);max-width:calc(100% - 4px);direction:ltr}
+.txbar button{min-width:30px;height:30px;padding:0 6px;border-radius:9px;border:1px solid #454b63;background:#2b3040;color:#eceef4;font:600 15px/1 "Segoe UI",Tahoma,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.txbar button:active{transform:scale(.93)}
+.txbar button.on{background:linear-gradient(135deg,var(--acc),var(--acc2));border-color:transparent;color:#fff}
+.txbar .sw2{width:21px;height:21px;min-width:21px;border-radius:50%;border:2px solid #6a6f86;padding:0}
+.txbar .sw2.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.22)}
+.txbar .ok{background:linear-gradient(135deg,#2f9e44,#1f7a33);border-color:transparent;color:#fff}
+.txbar .del{background:#7f2a2a;border-color:#a44444}
+textarea.tx{z-index:8;border-radius:6px;box-shadow:0 3px 12px rgba(0,0,0,.35);line-height:1.25}
