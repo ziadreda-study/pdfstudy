@@ -589,12 +589,12 @@ async function aiExplain(text,context){
   const c=r.j&&r.j.choices&&r.j.choices[0]&&r.j.choices[0].message&&r.j.choices[0].message.content;
   if(r.ok&&c)return String(c).trim();
   firstErr=(r.j&&r.j.error&&(r.j.error.message||r.j.error))||('HTTP '+r.status);
- }catch(e){firstErr=(e&&e.message)||'network'}
+ }catch(e){firstErr='نوصل لخدمة الشرح'}
  try{
   const r2=await postJSON(EXPLAIN_API,JSON.stringify({text,context}),15000);
   if(r2.ok&&r2.j&&r2.j.explanation)return r2.j.explanation;
   throw Error((r2.j&&(r2.j.detail||r2.j.error))||('HTTP '+r2.status));
- }catch(e2){throw Error(firstErr==='timeout'?'النت بطيء والشرح واخد وقت':(firstErr||'فشل'))}
+ }catch(e2){throw Error(firstErr==='timeout'?'النت بطيء والشرح واخد وقت':'مش قادرين '+firstErr+'. اتأكد من النت')}
 }
 
 function explainSel(t){
