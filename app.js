@@ -566,10 +566,32 @@ document.addEventListener('selectionchange',()=>{clearTimeout(selT);selT=setTime
 pop.addEventListener('pointerdown',e=>e.preventDefault());pop.addEventListener('mousedown',e=>e.preventDefault());
 function copyText(t){let ok=false;try{const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(ta);ta.select();ok=document.execCommand('copy');ta.remove()}catch(e){}
  if(ok)toast('اتنسخ ✓');else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('اتنسخ ✓'),()=>toast('النسخ مش متاح هنا، استخدم زرار نسخ الأندرويد'));else toast('النسخ مش متاح هنا')}
-function explainSel(t){const msg='اشرحلي الجزء ده من الملف بالعربي المصري البسيط، شرح دقيق ومطابق للنص، وسيب المصطلحات العلمية والطبية بالإنجليزي زي ما هي:\n\n'+t;
- const fallback=()=>{copyText(msg);try{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank')}catch(e){}toast('اتنسخ، والصقه في شات المساعد وابعته')};
- if(navigator.share){navigator.share({text:msg}).catch(e=>{if(e&&e.name=='AbortError')return;fallback()});return}
- fallback()}
+const EXPLAIN_API=(window.__EXPLAIN_API||'https://ziad-pdfstudy.netlify.app/.netlify/functions/explain');
+async function pageContext(p){try{const t=await pageText(p);return String(t||'').replace(/\s+/g,' ').trim().slice(0,2000)}catch(e){return''}}
+function explainSel(t){
+ const msg='اشرحلي الجزء ده من الملف بالعربي المصري البسيط، شرح دقيق ومطابق للنص، وسيب المصطلحات العلمية والطبية بالإنجليزي زي ما هي:\n\n'+t;
+ const share=()=>{copyText(msg);try{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank')}catch(e){}toast('اتنسخ، والصقه في شات المساعد وابعته')};
+ const p=selPg||curPage();
+ sheet(async(s,mk)=>{
+  const h=document.createElement('h3');h.textContent=__T('📖 شرح');s.appendChild(h);
+  const q=document.createElement('div');q.style.cssText='font-size:13px;line-height:1.8;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px;max-height:80px;overflow:auto;direction:auto;text-align:start';q.textContent=t;s.appendChild(q);
+  privNote(s,'⚠️ تنبيه خصوصية: النص المحدد وجزء من نص الصفحة بيتبعتوا لخدمة ذكاء اصطناعي خارجية عشان تعمل الشرح. باقي الملف مابيتبعتش.','النص المحدد بيتبعت لخدمة شرح خارجية.');
+  const out=document.createElement('div');out.style.cssText='font-size:15px;line-height:1.95;white-space:pre-wrap;text-align:start';s.appendChild(out);
+  const st=document.createElement('div');st.style.cssText='font-size:13px;color:var(--mute)';st.textContent=__T('بجهز الشرح...');s.appendChild(st);
+  mk(__T('ابعت للمساعد (واتساب)'),'g',share);
+  let done=false;
+  try{
+   const body=JSON.stringify({text:t,context:await pageContext(p)});
+   const r=await fetch(EXPLAIN_API,{method:'POST',headers:{'Content-Type':'application/json'},body});
+   const j=await r.json().catch(()=>({}));
+   if(!r.ok||!j.explanation)throw Error(j.detail||j.error||('HTTP '+r.status));
+   out.textContent=j.explanation;st.remove();done=true;
+   mk(__T('انسخ الشرح'),'g',()=>copyText(j.explanation));
+   mk(__T('شرح تاني'),'g',()=>explainSel(t));
+  }catch(e){st.style.color='#ff8a8a';st.textContent=__T('الشرح مش متاح دلوقتي')+' ('+((e&&e.message)||e)+'). '+__T('تقدر تبعته للمساعد من الزرار اللي تحت.');}
+  if(!done){const b2=document.createElement('div');b2.style.cssText='font-size:12px;color:var(--mute);margin-top:6px';b2.textContent=__T('الشرح بيشتغل على النت، ومحتاج سيرفر الشرح شغال.');s.appendChild(b2)}
+ });
+}
 pop.onclick=e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;const t=selTxt,p=selPg;pop.style.display='none';try{getSelection().removeAllRanges()}catch(x){}
  if(a=='copy')copyText(t);else if(a=='tr')openTrans(t,false);else if(a=='exp')explainSel(t);else if(a=='chat')askChat(t);else if(a=='say'||a=='slow')speak(t,a=='slow')};
 // focus mode
