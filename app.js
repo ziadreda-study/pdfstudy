@@ -584,18 +584,19 @@ async function pageContext(p){try{const t=await pageText(p);return String(t||'')
 async function aiExplain(text,context){
  let firstErr='';
  try{
-  const r=await postJSON(EXPLAIN_API,JSON.stringify({text,context}),15000);
-  if(r.ok&&r.j&&r.j.explanation)return r.j.explanation;
-  firstErr=(r.j&&(r.j.detail||r.j.error))||('HTTP '+r.status);
+  const user='النص المحدد:\n'+text+(context?'\n\nسياق الصفحة (للتوضيح بس):\n'+context:'');
+  const r=await postJSON('https://text.pollinations.ai/openai',JSON.stringify({model:'openai-fast',messages:[{role:'system',content:EXPLAIN_SYS},{role:'user',content:user}],max_tokens:700}),30000);
+  const c=r.j&&r.j.choices&&r.j.choices[0]&&r.j.choices[0].message&&r.j.choices[0].message.content;
+  if(r.ok&&c)return String(c).trim();
+  firstErr=(r.j&&r.j.error&&(r.j.error.message||r.j.error))||('HTTP '+r.status);
  }catch(e){firstErr=(e&&e.message)||'network'}
  try{
-  const user='النص المحدد:\n'+text+(context?'\n\nسياق الصفحة (للتوضيح بس):\n'+context:'');
-  const r2=await postJSON('https://text.pollinations.ai/openai',JSON.stringify({model:'openai-fast',messages:[{role:'system',content:EXPLAIN_SYS},{role:'user',content:user}],max_tokens:700}),30000);
-  const c=r2.j&&r2.j.choices&&r2.j.choices[0]&&r2.j.choices[0].message&&r2.j.choices[0].message.content;
-  if(r2.ok&&c)return String(c).trim();
-  throw Error((r2.j&&r2.j.error&&(r2.j.error.message||r2.j.error))||('HTTP '+r2.status));
+  const r2=await postJSON(EXPLAIN_API,JSON.stringify({text,context}),15000);
+  if(r2.ok&&r2.j&&r2.j.explanation)return r2.j.explanation;
+  throw Error((r2.j&&(r2.j.detail||r2.j.error))||('HTTP '+r2.status));
  }catch(e2){throw Error(firstErr==='timeout'?'النت بطيء والشرح واخد وقت':(firstErr||'فشل'))}
 }
+
 function explainSel(t){
  const msg='اشرحلي الجزء ده من الملف بالعربي المصري البسيط، شرح دقيق ومطابق للنص، وسيب المصطلحات العلمية والطبية بالإنجليزي زي ما هي:\n\n'+t;
  const share=()=>{copyText(msg);try{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank')}catch(e){}toast('اتنسخ، والصقه في شات المساعد وابعته')};
