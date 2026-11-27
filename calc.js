@@ -128,8 +128,6 @@ function mkBtn(id){
   b.innerHTML='<i>\ud83e\uddee</i><b>'+L.open+'</b>';
   b.addEventListener('click',openCalc);return b;}
 function addBtn(){
-  var tr=document.getElementById('trans');
-  if(tr&&!document.getElementById('calcOpen'))tr.parentNode.appendChild(mkBtn('calcOpen'));
   var ac=document.getElementById('askchat');
   if(ac&&!document.getElementById('calcOpen2'))ac.parentNode.insertBefore(mkBtn('calcOpen2'),ac.nextSibling);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addBtn);else addBtn();

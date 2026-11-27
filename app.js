@@ -557,7 +557,7 @@ async function buildTL(pg,before){try{const items=await pageItems(pg.page);if(!i
  pg.div.insertBefore(tl,before);pg.tl=tl}catch(e){}}
 // selection popup
 const pop=document.createElement('div');pop.id='selpop';
-[['copy','📋 نسخ'],['tr','🌐 ترجم'],['ask','💬 اسألني'],['chat','🤖 اسأل شات'],['say','🔊 نطق'],['slow','🐢 نطق بطيء']].forEach(a=>{const b=document.createElement('button');b.dataset.a=a[0];b.textContent=a[1];pop.appendChild(b)});shell.appendChild(pop);
+[['copy','📋 نسخ'],['tr','🌐 ترجم'],['exp','📖 شرح'],['chat','🤖 اسأل شات'],['say','🔊 نطق'],['slow','🐢 نطق بطيء']].forEach(a=>{const b=document.createElement('button');b.dataset.a=a[0];b.textContent=a[1];pop.appendChild(b)});shell.appendChild(pop);
 let selTxt='',selPg=1,selT=null;
 function selText(){const s=getSelection();if(!s||s.isCollapsed||!s.anchorNode)return'';const n=s.anchorNode.nodeType==1?s.anchorNode:s.anchorNode.parentElement;if(!n||!n.closest||!n.closest('.tl'))return'';return s.toString().replace(/\s+/g,' ').trim()}
 document.addEventListener('selectionchange',()=>{clearTimeout(selT);selT=setTimeout(()=>{const t=selText();if(!t){pop.style.display='none';return}selTxt=t;const s=getSelection(),r=s.getRangeAt(0).getBoundingClientRect(),sr=shell.getBoundingClientRect();
@@ -566,8 +566,12 @@ document.addEventListener('selectionchange',()=>{clearTimeout(selT);selT=setTime
 pop.addEventListener('pointerdown',e=>e.preventDefault());pop.addEventListener('mousedown',e=>e.preventDefault());
 function copyText(t){let ok=false;try{const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;top:0;left:0;opacity:0';document.body.appendChild(ta);ta.select();ok=document.execCommand('copy');ta.remove()}catch(e){}
  if(ok)toast('اتنسخ ✓');else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('اتنسخ ✓'),()=>toast('النسخ مش متاح هنا، استخدم زرار نسخ الأندرويد'));else toast('النسخ مش متاح هنا')}
+function explainSel(t){const msg='اشرحلي الجزء ده من الملف بالعربي، شرح واضح ومبسط:\n\n'+t;
+ const fallback=()=>{copyText(msg);try{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank')}catch(e){}toast('اتنسخ، والصقه في شات المساعد وابعته')};
+ if(navigator.share){navigator.share({text:msg}).catch(e=>{if(e&&e.name=='AbortError')return;fallback()});return}
+ fallback()}
 pop.onclick=e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;const t=selTxt,p=selPg;pop.style.display='none';try{getSelection().removeAllRanges()}catch(x){}
- if(a=='copy')copyText(t);else if(a=='tr')openTrans(t,false);else if(a=='ask')explain(p,t);else if(a=='chat')askChat(t);else if(a=='say'||a=='slow')speak(t,a=='slow')};
+ if(a=='copy')copyText(t);else if(a=='tr')openTrans(t,false);else if(a=='exp')explainSel(t);else if(a=='chat')askChat(t);else if(a=='say'||a=='slow')speak(t,a=='slow')};
 // focus mode
 const xb=document.createElement('button');xb.id='xbtn';xb.textContent='✕';xb.style.display='none';xb.setAttribute('aria-label','رجوع للـPDF كله');$('#body').appendChild(xb);
 function showFocus(i){focusI=i;pages.forEach(p=>p.div.classList.toggle('foc',p.i==i));main.scrollTop=0;main.scrollLeft=0;$('#pn').value=i}
@@ -649,7 +653,7 @@ function step(q,rev){sheet((s,mk)=>{if(!q.length){const h=document.createElement
  const a=document.createElement('div');a.style.cssText='font-size:19px;line-height:1.9;padding:14px 4px;color:#8be59b';a.dir='auto';a.textContent=c.back;s.appendChild(a);
  const days=[0,1,2,4,7,15,30],done=bx=>{c.box=bx;c.due=bx==0?Date.now()+60000:Date.now()+days[bx]*864e5;saveCards();q.shift();if(bx==0)q.push(c);step(q,false)};
  mk('😣 لسه مش حافظها','g',()=>done(0));mk('🙂 تمام','',()=>done(Math.min(6,c.box+1)));mk('😎 سهلة','g',()=>done(Math.min(6,c.box+2)))})}
-$('#cards').onclick=async()=>{if(!pdf){toast('افتح ملف الأول');return}toast('بجهّز الكروت...');try{await genCards()}catch(e){toast('خطأ في الكروت: '+(e&&e.message||e))}showCards()};
+const _cardsBtn=$('#cards');if(_cardsBtn)_cardsBtn.onclick=async()=>{if(!pdf){toast('افتح ملف الأول');return}toast('بجهّز الكروت...');try{await genCards()}catch(e){toast('خطأ في الكروت: '+(e&&e.message||e))}showCards()};
 
 
 // ===== ask ChatGPT (opens chatgpt.com in a new tab; nothing is sent until he taps the link) =====
