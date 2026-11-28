@@ -40,7 +40,7 @@ const ready = (async () => {
     g.PDFLib = g.PDFLib || pick(pdflibMod, 'PDFDocument');
     const miss = ['pdfjsLib', 'pdfjsWorker', 'PDFLib'].filter((k) => !g[k]);
     if (miss.length) throw new Error('مكتبات ناقصة: ' + miss.join(', '));
-    const appMod = await import('./app.js?v=18');
+    const appMod = await import('./app.js?v=19');
     appMod.default();
 })();
 ready.then(() => { const b = document.getElementById('booting'); if (b) b.remove(); setStatus('جاهز ✓ اختار ملف.'); }).catch((e) => { const b = document.getElementById('booting'); if (b) b.textContent = 'فشل التشغيل: ' + String(e); setStatus('فشل التشغيل: ' + String(e), true); });

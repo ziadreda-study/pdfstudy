@@ -588,14 +588,14 @@ async function aiExplain(text,context){
   const c=r.j&&r.j.choices&&r.j.choices[0]&&r.j.choices[0].message&&r.j.choices[0].message.content;
   if(r.ok&&c)return String(c).trim();
   throw Error((r.j&&r.j.error&&(r.j.error.message||r.j.error))||('HTTP '+r.status));
- }catch(e){throw Error(e&&e.message=='timeout'?'النت بطيء والشرح واخد وقت':((e&&e.message)||'مش قادرين نوصل للخدمة'))}
+ }catch(e){const m=(e&&e.message)||'';throw Error(m=='timeout'?'النت بطيء والشرح واخد وقت':(/failed to fetch|networkerror|load failed/i.test(m)||!m?'مفيش اتصال بخدمة الشرح':m))}
 }
 async function aiExplainAlt(text,context){
  try{
   const r=await postJSON(EXPLAIN_API,JSON.stringify({text,context}),15000);
   if(r.ok&&r.j&&r.j.explanation)return r.j.explanation;
   throw Error((r.j&&(r.j.detail||r.j.error))||('HTTP '+r.status));
- }catch(e){throw Error(e&&e.message=='timeout'?'النت بطيء والشرح واخد وقت':((e&&e.message)||'مش قادرين نوصل للخدمة'))}
+ }catch(e){const m=(e&&e.message)||'';throw Error(m=='timeout'?'النت بطيء والشرح واخد وقت':(/failed to fetch|networkerror|load failed/i.test(m)||!m?'مفيش اتصال بخدمة الشرح':m))}
 }
 
 function explainSel(t){
