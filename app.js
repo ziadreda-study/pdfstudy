@@ -581,20 +581,21 @@ function postJSON(url,payload,ms){return new Promise((res,rej)=>{
   .then(async r=>{clearTimeout(to);const j=await r.json().catch(()=>({}));res({ok:r.ok,status:r.status,j})})
   .catch(e=>{clearTimeout(to);rej(e&&e.name=='AbortError'?Error('timeout'):e)})})}
 async function pageContext(p){try{const t=await pageText(p);return String(t||'').replace(/\s+/g,' ').trim().slice(0,2000)}catch(e){return''}}
+function explainPrompt(text,context){return 'النص المحدد:\n'+text+(context?'\n\nسياق الصفحة (للتوضيح بس):\n'+context:'')}
 async function aiExplain(text,context){
- let firstErr='';
  try{
-  const user='النص المحدد:\n'+text+(context?'\n\nسياق الصفحة (للتوضيح بس):\n'+context:'');
-  const r=await postJSON('https://text.pollinations.ai/openai',JSON.stringify({model:'openai-fast',messages:[{role:'system',content:EXPLAIN_SYS},{role:'user',content:user}],max_tokens:700}),30000);
+  const r=await postJSON('https://text.pollinations.ai/openai',JSON.stringify({model:'openai-fast',messages:[{role:'system',content:EXPLAIN_SYS},{role:'user',content:explainPrompt(text,context)}],max_tokens:700}),30000);
   const c=r.j&&r.j.choices&&r.j.choices[0]&&r.j.choices[0].message&&r.j.choices[0].message.content;
   if(r.ok&&c)return String(c).trim();
-  firstErr=(r.j&&r.j.error&&(r.j.error.message||r.j.error))||('HTTP '+r.status);
- }catch(e){firstErr='نوصل لخدمة الشرح'}
+  throw Error((r.j&&r.j.error&&(r.j.error.message||r.j.error))||('HTTP '+r.status));
+ }catch(e){throw Error(e&&e.message=='timeout'?'النت بطيء والشرح واخد وقت':((e&&e.message)||'مش قادرين نوصل للخدمة'))}
+}
+async function aiExplainAlt(text,context){
  try{
-  const r2=await postJSON(EXPLAIN_API,JSON.stringify({text,context}),15000);
-  if(r2.ok&&r2.j&&r2.j.explanation)return r2.j.explanation;
-  throw Error((r2.j&&(r2.j.detail||r2.j.error))||('HTTP '+r2.status));
- }catch(e2){throw Error(firstErr==='timeout'?'النت بطيء والشرح واخد وقت':'مش قادرين '+firstErr+'. اتأكد من النت')}
+  const r=await postJSON(EXPLAIN_API,JSON.stringify({text,context}),15000);
+  if(r.ok&&r.j&&r.j.explanation)return r.j.explanation;
+  throw Error((r.j&&(r.j.detail||r.j.error))||('HTTP '+r.status));
+ }catch(e){throw Error(e&&e.message=='timeout'?'النت بطيء والشرح واخد وقت':((e&&e.message)||'مش قادرين نوصل للخدمة'))}
 }
 
 function explainSel(t){
@@ -607,7 +608,7 @@ function explainSel(t){
   const dest=document.createElement('div');dest.style.cssText='font-size:12px;color:var(--mute);line-height:1.6;margin:2px 0 6px';dest.textContent=__T('اللي هيتبعت: النص المحدد بس، لخدمة ذكاء اصطناعي مجانية اسمها Pollinations AI. مفيش حاجة بتتبعت غير لما تدوس "اشرح دلوقتي".');s.appendChild(dest);
   const out=document.createElement('div');out.style.cssText='font-size:15px;line-height:1.95;white-space:pre-wrap;text-align:start';s.appendChild(out);
   const st=document.createElement('div');st.style.cssText='font-size:13px;color:var(--mute)';s.appendChild(st);
-  let ctx='',prev=null;
+  let ctx='',prev=null,altBtn=null;
   const cbtn=mk(__T('➕ ضيف نص الصفحة حواليه (اختياري)'),'g',async()=>{
    if(ctx){ctx='';if(prev){prev.remove();prev=null}cbtn.textContent=__T('➕ ضيف نص الصفحة حواليه (اختياري)');return}
    cbtn.textContent=__T('بحمّل النص...');
@@ -615,7 +616,7 @@ function explainSel(t){
    if(!ctx){cbtn.textContent=__T('مفيش نص حواليه');return}
    cbtn.textContent=__T('✕ شيل نص الصفحة');
    prev=document.createElement('div');prev.style.cssText='font-size:12px;line-height:1.7;color:var(--mute);background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:8px;max-height:90px;overflow:auto;text-align:start';
-   prev.textContent=ctx.slice(0,500)+(ctx.length>500?'…':'');
+   prev.textContent=ctx;
    s.insertBefore(prev,out);
    const nt=document.createElement('div');nt.style.cssText='font-size:11px;color:var(--mute);margin-top:4px';nt.textContent=__T('ده اللي هيتبعت زيادة، من غير أي تعديل');prev.appendChild(nt);
   });
@@ -627,8 +628,17 @@ function explainSel(t){
     mk(__T('انسخ الشرح'),'g',()=>copyText(ex));
     mk(__T('شرح تاني'),'g',()=>explainSel(t));
    }catch(e){
-    go.disabled=false;go.style.opacity='1';
+    go.disabled=false;go.style.opacity='1';go.textContent=__T('جرب تاني');
     st.style.color='#ff8a8a';st.textContent=__T('الشرح مش راضي يجي')+': '+((e&&e.message)||e);
+    if(!altBtn)altBtn=mk(__T('جرب بمحرك تاني (OpenRouter)'),'g',async()=>{
+     altBtn.disabled=true;altBtn.style.opacity='.6';st.style.color='var(--mute)';st.textContent=__T('بجهز الشرح...');
+     try{
+      const ex2=await aiExplainAlt(t,ctx);
+      out.textContent=ex2;st.remove();go.remove();altBtn.remove();try{cbtn.remove()}catch(x){}
+      mk(__T('انسخ الشرح'),'g',()=>copyText(ex2));
+      mk(__T('شرح تاني'),'g',()=>explainSel(t));
+     }catch(e2){altBtn.disabled=false;altBtn.style.opacity='1';st.style.color='#ff8a8a';st.textContent=__T('الشرح مش راضي يجي')+': '+((e2&&e2.message)||e2)}
+    });
    }
   });
   mk(__T('ابعت للمساعد (واتساب)'),'g',share);
